@@ -9,13 +9,16 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.naive_bayes import GaussianNB
 import matplotlib.pyplot as plt
 from sklearn.svm import SVC
+import tflearn
+from tflearn.layers.conv import conv_2d, max_pool_2d
+from tflearn.layers.core import input_data, dropout, fully_connected
+from tflearn.layers.estimator import regression
 
-TRAIN_DIR = 'face/train/'
-TEST_DIR = 'face/test/'
+TRAIN_DIR = './train/'
+TEST_DIR = './test/'
 IMG_SIZE1 = 640
 IMG_SIZE2=480
 LR = 1e-3
-
 MODEL_NAME = 'face2-{}-{}.model'.format(LR, '2conv-basic') # just so we remember which saved model is which,
 
 def label_img(img):
@@ -51,11 +54,6 @@ def process_test_data():
 
 train_data=create_train_data()
 
-import tflearn
-from tflearn.layers.conv import conv_2d, max_pool_2d
-from tflearn.layers.core import input_data, dropout, fully_connected
-from tflearn.layers.estimator import regression
-
 convnet = input_data(shape=[None, IMG_SIZE1, IMG_SIZE2, 1], name='input')
 
 convnet = conv_2d(convnet, 32, 5, activation='relu')
@@ -88,11 +86,10 @@ Y = [i[1] for i in train]
 #X, Y = image_preloader(dataset_file2, image_shape=(640, 480),   mode='file', categorical_labels=True,   normalize=True)
 test_x = np.array([i[0] for i in test]).reshape(-1,IMG_SIZE1,IMG_SIZE2,1)
 test_y = [i[1] for i in test]
-model.fit({'input':X},{'targets':Y})
+# model.fit({'input':X},{'targets':Y})
 model.fit({'input': X}, {'targets': Y}, n_epoch=3, validation_set=({'input': test_x}, {'targets': test_y}), 
      snapshot_step=500, show_metric=True, run_id=MODEL_NAME)
 model.save(MODEL_NAME)
-import matplotlib.pyplot as plt
 
 
 test_data = process_test_data()
@@ -103,10 +100,9 @@ for num,data in enumerate(test_data[:16]):
     img_num = data[1]
     img_data = data[0]
     
-    y = fig.add_subplot(3,4,num+1)
+    y = fig.add_subplot(4,4,num+1)
     orig = img_data
     data = img_data.reshape(IMG_SIZE1,IMG_SIZE2,1)
-    #model_out = model.predict([data])[0]
     model_out = model.predict([data])[0]
     
     if np.argmax(model_out) == 1: str_label='m'
