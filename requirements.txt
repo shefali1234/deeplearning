@@ -1,4 +1,0 @@
-tensorflow
-tflearn
-opencv-python
-tqdm
